@@ -96,6 +96,13 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
+> [!IMPORTANT]
+> Si usas Windows y la terminal muestra un error de ejecución de scripts o permisos, ejecuta el siguiente comando en PowerShell como administrador antes de activar el entorno:
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+
+
 Una vez activado, el prompt de la terminal mostrará `(venv)` al inicio.
 
 ### 3. Instalar dependencias de Python
