@@ -1,0 +1,124 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 24px 24px 32px;
+}
+
+.error {
+    background: #ef444410;
+    border: 1px solid #ef444430;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+}
+
+/* ── Sección ── */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sectionHead {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sectionTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-h);
+    letter-spacing: -0.01em;
+}
+
+.sectionSub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+}
+
+/* ── Métricas circulares ── */
+.metricas {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* ── Detalle TP/FP/FN ── */
+.detalle {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.detalleItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.detalleVal {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.detalleLabel {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: center;
+}
+
+.detalleSep {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+/* ── Gráficos ── */
+.charts {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 14px;
+}
+
+.chartMain,
+.chartSide {
+    min-width: 0;
+}
+
+/* ── Indicador de refresco ── */
+.refreshing {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    padding-right: 4px;
+}
+
+@media (max-width: 900px) {
+    .charts {
+        grid-template-columns: 1fr;
+    }
+
+    .metricas {
+        justify-content: center;
+    }
+
+    .layout {
+        padding: 16px 16px 28px;
+    }
+}

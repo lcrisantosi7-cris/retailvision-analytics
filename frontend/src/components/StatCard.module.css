@@ -1,0 +1,23 @@
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* borde izquierdo de color inyectado via style */
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+}
+
+.value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-h);
+    letter-spacing: -0.02em;
+}
+
+.unit {
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 3px;
+    color: var(--muted);
+}

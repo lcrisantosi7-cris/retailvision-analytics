@@ -1,0 +1,65 @@
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.avg {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.avg strong {
+    color: var(--yellow);
+    font-weight: 600;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.emptyBody {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 32px 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.emptyIcon {
+    font-size: 28px;
+    opacity: 0.35;
+}
+
+.tooltip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-family: var(--font);
+    box-shadow: var(--shadow);
+}
+
+.tooltipLabel {
+    font-weight: 600;
+    color: var(--text-h);
+    margin-bottom: 2px;
+}
+
+.tooltipVal {
+    color: var(--accent);
+    font-weight: 700;
+}

@@ -1,0 +1,38 @@
+.wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    flex: 1 1 0;
+    min-width: 140px;
+}
+
+.ring {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.val {
+    position: absolute;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-h);
+}
+
+.desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    max-width: 140px;
+}
