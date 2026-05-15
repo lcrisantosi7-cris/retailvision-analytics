@@ -76,8 +76,8 @@ Reporte ejecutivo descargable en PDF:
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>
-cd <nombre-del-repositorio>
+git clone https://github.com/lcrisantosi7-cris/retailvision-analytics.git
+cd retailvision-analytics
 ```
 
 ### 2. Configurar el entorno virtual de Python
