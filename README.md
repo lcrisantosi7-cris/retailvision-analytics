@@ -1,8 +1,8 @@
 # RetailMonitor
 
-Sistema inteligente de monitoreo y análisis de comportamiento de clientes en establecimientos comerciales, desarrollado con visión artificial (YOLOv8) y una interfaz web en tiempo real.
+> Sistema inteligente de monitoreo y análisis de comportamiento de clientes en establecimientos comerciales, desarrollado con visión artificial (YOLOv8) y una interfaz web en tiempo real.
 
-Proyecto de investigación aplicada — Universidad César Vallejo · Piura 2026.
+**Proyecto de investigación aplicada**
 
 ---
 
@@ -10,7 +10,11 @@ Proyecto de investigación aplicada — Universidad César Vallejo · Piura 2026
 
 RetailMonitor conecta una cámara al local comercial y, usando el modelo de detección YOLOv8, detecta y rastrea automáticamente a cada persona que entra al establecimiento. Toda la información se visualiza en tiempo real desde cualquier navegador web.
 
-### Vista Monitor
+---
+
+## Vistas del sistema
+
+### 🖥️ Vista Monitor
 La pantalla principal del sistema. Muestra:
 - **Feed de cámara en vivo** con bounding boxes sobre cada persona detectada, identificadas por ID y zona.
 - **4 KPIs en tiempo real**: clientes en cámara, zona más activa, confianza promedio de detección y FPS de procesamiento.
@@ -18,14 +22,14 @@ La pantalla principal del sistema. Muestra:
 - **Mapa de calor acumulado**: visualización de las zonas con mayor concentración de movimiento durante la sesión.
 - **Tabla de clientes activos**: lista de cada persona detectada con su ID, zona actual, confianza y tiempo de permanencia.
 
-### Vista Análisis
+### 📊 Vista Análisis
 Métricas técnicas del modelo de detección y estadísticas de comportamiento:
 - **Precisión, Recall y F1-Score** del modelo YOLOv8, calculados en tiempo real con anillos circulares animados.
 - **Conteo de TP / FP / FN** (verdaderos positivos, falsos positivos, falsos negativos).
 - **Gráfico de línea** con el promedio de clientes por hora a lo largo del día.
 - **Gráfico de barras horizontales** con el tiempo promedio de permanencia por zona.
 
-### Vista Reportes
+### 📄 Vista Reportes
 Reporte ejecutivo descargable en PDF:
 - **Resumen ejecutivo** con los KPIs más importantes de la sesión.
 - **Tabla de análisis por zona** con clientes, porcentaje del total, permanencia promedio y nivel de prioridad.
@@ -67,7 +71,8 @@ Reporte ejecutivo descargable en PDF:
 - Una **cámara web** conectada (USB o integrada)
 - Conexión a internet la primera vez (para descargar el modelo `yolov8n.pt` automáticamente)
 
-> **GPU opcional**: si tu equipo tiene una GPU NVIDIA con CUDA, el sistema la detecta y la usa automáticamente para acelerar la inferencia. Sin GPU, corre en CPU sin problema.
+> [!TIP]
+> **GPU opcional**: si tu equipo tiene una GPU NVIDIA con CUDA, el sistema la detecta y la usa automáticamente para acelerar la inferencia. Sin GPU, corre perfectamente en CPU.
 
 ---
 
@@ -82,28 +87,23 @@ cd retailvision-analytics
 
 ### 2. Configurar el entorno virtual de Python
 
-Es importante usar un entorno virtual para no afectar otras instalaciones de Python en el sistema.
-
 ```bash
 # Crear el entorno virtual
 python -m venv venv
 
-# Activar el entorno virtual
-# En Windows:
+# Activar — Windows
 venv\Scripts\activate
 
-# En macOS / Linux:
+# Activar — macOS / Linux
 source venv/bin/activate
 ```
 
 > [!IMPORTANT]
-> Si usas Windows y la terminal muestra un error de ejecución de scripts o permisos, ejecuta el siguiente comando en PowerShell como administrador antes de activar el entorno:
+> Si usas Windows y la terminal muestra un error de permisos al activar el entorno, ejecuta esto en **PowerShell como administrador** antes de continuar:
 > ```powershell
 > Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 > ```
-
-
-Una vez activado, el prompt de la terminal mostrará `(venv)` al inicio.
+> Una vez activado correctamente, el prompt mostrará `(venv)` al inicio de cada línea.
 
 ### 3. Instalar dependencias de Python
 
@@ -111,9 +111,8 @@ Una vez activado, el prompt de la terminal mostrará `(venv)` al inicio.
 pip install -r requirements.txt
 ```
 
-Esto instala FastAPI, Uvicorn, OpenCV, Ultralytics (YOLOv8) y el resto de dependencias del backend.
-
-> La primera vez que se ejecute el backend, YOLOv8 descargará automáticamente el archivo `yolov8n.pt` (~6 MB). Requiere conexión a internet.
+> [!NOTE]
+> La primera vez que arranque el backend, YOLOv8 descargará automáticamente el archivo `yolov8n.pt` (~6 MB). Asegúrate de tener conexión a internet en ese momento.
 
 ### 4. Instalar dependencias del frontend
 
@@ -123,19 +122,22 @@ npm install
 cd ..
 ```
 
-### 5. Configurar el índice de cámara (si es necesario)
+### 5. Configurar el índice de cámara
 
-Abre `main.py` y busca la línea:
+Abre `main.py` y localiza la línea:
 
 ```python
 CAMERA_INDEX = 0
 ```
 
-- `0` → primera cámara disponible (webcam integrada, o la única USB si no hay integrada)
-- `1` → segunda cámara (USB externa cuando hay webcam integrada)
-- `2` → tercera cámara, etc.
+| Valor | Cuándo usarlo |
+|-------|---------------|
+| `0`   | Webcam integrada de laptop, o única cámara USB en PC de escritorio |
+| `1`   | Cámara USB externa cuando ya hay webcam integrada |
+| `2`   | Tercera cámara disponible |
 
-En una **PC de escritorio sin webcam integrada**, la cámara USB externa normalmente es el índice `0`.
+> [!TIP]
+> Si no sabes qué índice usar, prueba con `0`. Si la cámara no abre, cambia a `1` y reinicia el backend.
 
 ### 6. Ejecutar el backend
 
@@ -145,39 +147,36 @@ Con el entorno virtual activado, desde la raíz del proyecto:
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Deberías ver en la terminal:
+Una salida exitosa se ve así:
+
 ```
 [OK] Cámara 0 iniciada.
-[YOLO] Usando dispositivo: cpu   (o cuda si tienes GPU)
+[YOLO] Usando dispositivo: cpu   ← (o "cuda" si tienes GPU NVIDIA)
 [OK] Hilo de cámara y YOLO iniciado.
 INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
 ### 7. Ejecutar el frontend
 
-Abre una **segunda terminal**, activa el entorno virtual si es necesario, y ejecuta:
+Abre una **segunda terminal** y ejecuta:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Deberías ver:
 ```
   VITE v6.x.x  ready in Xms
-
   ➜  Local:   http://localhost:5173/
 ```
 
 ### 8. Abrir la aplicación
 
-Abre tu navegador y ve a:
-
 ```
 http://localhost:5173
 ```
 
-El sistema estará en vivo. El indicador **"En vivo"** en el header confirma la conexión con el backend.
+El indicador **"En vivo"** en el header confirma que el frontend está conectado al backend.
 
 ---
 
@@ -192,6 +191,9 @@ El sistema estará en vivo. El indicador **"En vivo"** en el header confirma la 
 | `GET` | `/api/historial` | Promedio de clientes por hora |
 | `GET` | `/api/metricas` | Precisión, Recall, F1 y tiempos por zona |
 | `GET` | `/api/zonas` | Lista de zonas configuradas |
+
+> [!TIP]
+> Con el backend corriendo, ve a `http://localhost:8000/docs` para ver la documentación interactiva de todos los endpoints (Swagger UI).
 
 ---
 
@@ -215,26 +217,26 @@ El sistema estará en vivo. El indicador **"En vivo"** en el header confirma la 
         │   ├── useAnalisis.js   # Fetch de métricas e historial
         │   └── useReporte.js    # Fetch combinado para la vista de reportes
         ├── components/
-        │   ├── Header.jsx       # Navegación: Monitor / Análisis / Reportes
-        │   ├── StatCard.jsx     # Tarjeta de KPI con borde de color
-        │   ├── CameraFeed.jsx   # Visor MJPEG en vivo
-        │   ├── ZoneChart.jsx    # Gráfico de barras por zona (Recharts)
-        │   ├── Heatmap.jsx      # Mapa de calor acumulado
-        │   ├── ClientList.jsx   # Tabla de clientes activos
-        │   ├── AnalisisView.jsx # Vista completa de análisis
-        │   ├── MetricaBadge.jsx # Anillo circular SVG para métricas
+        │   ├── Header.jsx            # Navegación: Monitor / Análisis / Reportes
+        │   ├── StatCard.jsx          # Tarjeta de KPI con borde de color
+        │   ├── CameraFeed.jsx        # Visor MJPEG en vivo
+        │   ├── ZoneChart.jsx         # Gráfico de barras por zona (Recharts)
+        │   ├── Heatmap.jsx           # Mapa de calor acumulado
+        │   ├── ClientList.jsx        # Tabla de clientes activos
+        │   ├── AnalisisView.jsx      # Vista completa de análisis
+        │   ├── MetricaBadge.jsx      # Anillo circular SVG para métricas
         │   ├── HistorialChart.jsx    # Gráfico de línea por hora
         │   ├── TiempoZonaChart.jsx   # Barras horizontales de permanencia
-        │   └── ReporteView.jsx  # Vista de reportes con exportación PDF
+        │   └── ReporteView.jsx       # Vista de reportes con exportación PDF
         └── utils/
-            └── generarReporte.js # Lógica de recomendaciones + exportación PDF
+            └── generarReporte.js     # Lógica de recomendaciones + exportación PDF
 ```
 
 ---
 
 ## Zonas del local
 
-Las zonas están definidas en `main.py` como coordenadas normalizadas (0 a 1) sobre el frame de la cámara. Por defecto el sistema divide el espacio en 5 zonas:
+Las zonas se definen en `main.py` como coordenadas normalizadas (0 a 1) sobre el frame de la cámara. Por defecto el sistema divide el espacio en 5 zonas:
 
 | Zona | Posición en el frame |
 |------|----------------------|
@@ -244,30 +246,52 @@ Las zonas están definidas en `main.py` como coordenadas normalizadas (0 a 1) so
 | Zona C - Accesorios | 45% – 75% del ancho |
 | Caja | 75% – 100% del ancho |
 
-Para adaptar las zonas a tu local, edita el diccionario `ZONAS` en `main.py`.
+> [!NOTE]
+> Para adaptar las zonas a la distribución real de tu local, edita el diccionario `ZONAS` en `main.py`. Las coordenadas son fracciones del ancho/alto del frame, por lo que no dependen de la resolución de la cámara.
 
 ---
 
-## Solución de problemas frecuentes
+## Solución de problemas
 
 **La cámara no abre**
+
 Cambia `CAMERA_INDEX` en `main.py` a `1` o `2` y reinicia el backend.
 
+> [!WARNING]
+> Si otra aplicación está usando la cámara (Teams, Zoom, OBS, etc.), el backend no podrá acceder a ella. Cierra esas apps antes de iniciar el sistema.
+
+---
+
 **El video no aparece en el navegador**
-Verifica que el backend esté corriendo en el puerto 8000. Abre `http://localhost:8000/video` directamente en el navegador para probar el stream.
+
+Abre `http://localhost:8000/video` directamente en el navegador para verificar que el stream MJPEG funciona antes de culpar al frontend.
+
+---
 
 **El indicador dice "Desconectado"**
-El frontend no puede conectarse al WebSocket. Asegúrate de que el backend esté activo y que no haya un firewall bloqueando el puerto 8000.
 
-**Bajo rendimiento / FPS bajos**
-- Usa `yolov8n.pt` (nano) que es el más rápido. Ya está configurado por defecto.
-- Si tienes GPU NVIDIA, instala PyTorch con soporte CUDA: [pytorch.org](https://pytorch.org/get-started/locally/)
-- Reduce la resolución de captura en `main.py` cambiando `1280x720` a `640x480`.
+El frontend no puede conectarse al WebSocket. Verifica que el backend esté activo en el puerto 8000 y que no haya un firewall bloqueando la conexión.
+
+---
+
+**FPS bajos o procesamiento lento**
+
+> [!TIP]
+> Prueba estas opciones en orden, de menor a mayor impacto:
+> 1. Confirma que estás usando `yolov8n.pt` (nano) — ya está configurado por defecto.
+> 2. Instala PyTorch con soporte CUDA si tienes GPU NVIDIA: [pytorch.org](https://pytorch.org/get-started/locally/)
+> 3. Reduce la resolución en `main.py` de `1280×720` a `640×480`.
+
+---
 
 **Error al instalar `opencv-python` en Linux**
-```bash
-sudo apt-get install libgl1-mesa-glx libglib2.0-0
-```
+
+> [!CAUTION]
+> En sistemas Linux sin entorno gráfico (servidores, WSL) `opencv-python` puede fallar por dependencias faltantes. Instálalas así:
+> ```bash
+> sudo apt-get install libgl1-mesa-glx libglib2.0-0
+> ```
+> Luego vuelve a ejecutar `pip install -r requirements.txt`.
 
 ---
 
@@ -287,8 +311,21 @@ sudo apt-get install libgl1-mesa-glx libglib2.0-0
 
 ---
 
-## Notas para el entorno de producción
+## Notas para producción
 
-- El archivo `venv/` y `node_modules/` están en `.gitignore` y no se suben al repositorio.
-- El modelo `yolov8n.pt` se descarga automáticamente la primera vez. Si trabajas sin internet, descárgalo manualmente desde [github.com/ultralytics/assets](https://github.com/ultralytics/assets/releases) y colócalo en la raíz del proyecto.
-- Para acceder desde otra computadora en la misma red, reemplaza `localhost` por la IP local del servidor en `useMonitor.js`, `useAnalisis.js`, `useReporte.js` y `CameraFeed.jsx`.
+> [!IMPORTANT]
+> Los directorios `venv/` y `node_modules/` están en `.gitignore` y **no se suben al repositorio**. Cada colaborador debe ejecutar los pasos de instalación en su propia máquina.
+
+> [!NOTE]
+> Para acceder al sistema desde otra computadora en la misma red local, reemplaza `localhost` por la IP local del servidor (ej. `192.168.1.X`) en estos archivos:
+> - `useMonitor.js`
+> - `useAnalisis.js`
+> - `useReporte.js`
+> - `CameraFeed.jsx`
+
+> [!TIP]
+> Si trabajas sin internet, descarga el modelo manualmente desde [github.com/ultralytics/assets](https://github.com/ultralytics/assets/releases) y coloca el archivo `yolov8n.pt` en la raíz del proyecto antes de iniciar el backend.
+
+---
+
+*RetailMonitor · Lima 2026*
