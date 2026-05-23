@@ -88,7 +88,7 @@ Reporte ejecutivo descargable en PDF **por cámara seleccionada**:
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/retailvision-analytics.git
+git clone https://github.com/lcrisantosi7-cris/retailvision-analytics.git
 cd retailvision-analytics
 ```
 
