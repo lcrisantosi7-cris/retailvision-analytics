@@ -4,19 +4,25 @@ import HistorialChart from './HistorialChart'
 import TiempoZonaChart from './TiempoZonaChart'
 import styles from './AnalisisView.module.css'
 
-export default function AnalisisView({ activo }) {
-    const { data, loading, error } = useAnalisis(activo)
+export default function AnalisisView({ activo, camId = 'cam_01', camNombre = '' }) {
+    const { data, loading, error } = useAnalisis(activo, camId)
     const { metricas, historial } = data
 
     return (
         <div className={styles.layout}>
 
-            {/* Banner de error */}
-            {error && (
-                <div className={styles.error}>⚠ {error}</div>
-            )}
+            {/* Indicador de cámara activa */}
+            <div className={styles.camBanner}>
+                <span className={styles.camDot} />
+                <span className={styles.camLabel}>
+                    Analizando: <strong>{camNombre || camId}</strong>
+                </span>
+                {loading && <span className={styles.refreshing}>Actualizando…</span>}
+            </div>
 
-            {/* ── Sección: Métricas del modelo ── */}
+            {error && <div className={styles.error}>⚠ {error}</div>}
+
+            {/* ── Métricas del modelo ── */}
             <section className={styles.section}>
                 <div className={styles.sectionHead}>
                     <h2 className={styles.sectionTitle}>Métricas del modelo</h2>
@@ -71,7 +77,7 @@ export default function AnalisisView({ activo }) {
                 </div>
             </section>
 
-            {/* ── Sección: Historial + Permanencia ── */}
+            {/* ── Comportamiento temporal ── */}
             <section className={styles.section}>
                 <div className={styles.sectionHead}>
                     <h2 className={styles.sectionTitle}>Comportamiento temporal</h2>
@@ -90,7 +96,6 @@ export default function AnalisisView({ activo }) {
                 </div>
             </section>
 
-            {loading && <div className={styles.refreshing}>Actualizando…</div>}
         </div>
     )
 }

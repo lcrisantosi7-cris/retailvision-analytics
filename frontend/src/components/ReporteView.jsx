@@ -31,8 +31,8 @@ function Badge({ tipo }) {
     )
 }
 
-export default function ReporteView({ activo }) {
-    const { data, loading, error, lastUpdate, refetch } = useReporte(activo)
+export default function ReporteView({ activo, camId = 'cam_01', camNombre = '' }) {
+    const { data, loading, error, lastUpdate, refetch } = useReporte(activo, camId)
     const [exportando, setExportando] = useState(false)
     const reporteRef = useRef(null)
 
@@ -87,6 +87,10 @@ export default function ReporteView({ activo }) {
             <div className={styles.toolbar}>
                 <div className={styles.toolbarLeft}>
                     <span className={styles.toolbarTitle}>Reporte de sesión</span>
+                    <span className={styles.toolbarCam}>
+                        <span className={styles.toolbarCamDot} />
+                        {camNombre || camId}
+                    </span>
                     {lastUpdate && (
                         <span className={styles.toolbarSub}>
                             Actualizado: {lastUpdate.toLocaleTimeString('es-PE')}
@@ -121,6 +125,7 @@ export default function ReporteView({ activo }) {
                     </div>
                     <div className={styles.reporteMeta}>
                         <p className={styles.reporteFecha}>{fechaReporte}</p>
+                        <p className={styles.reporteCam}>{camNombre || camId}</p>
                         <p className={styles.reporteSubtitle}>Reporte de toma de decisiones comerciales · Piura 2026</p>
                     </div>
                 </div>

@@ -16,7 +16,7 @@ const ESTADO_INICIAL = {
     },
 }
 
-export function useAnalisis(activo = false) {
+export function useAnalisis(activo = false, camId = 'cam_01') {
     const [data, setData] = useState(ESTADO_INICIAL)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
@@ -26,8 +26,8 @@ export function useAnalisis(activo = false) {
         setLoading(true)
         try {
             const [rHist, rMet] = await Promise.all([
-                fetch(`${BASE}/api/historial`),
-                fetch(`${BASE}/api/metricas`),
+                fetch(`${BASE}/api/historial/${camId}`),
+                fetch(`${BASE}/api/metricas/${camId}`),
             ])
             const hist = await rHist.json()
             const met = await rMet.json()
@@ -38,9 +38,8 @@ export function useAnalisis(activo = false) {
         } finally {
             setLoading(false)
         }
-    }, [activo])
+    }, [activo, camId])
 
-    // Refresca cada 5 segundos mientras la vista está activa
     useEffect(() => {
         fetchData()
         if (!activo) return

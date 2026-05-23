@@ -58,6 +58,23 @@
     color: var(--text-h);
 }
 
+.toolbarCam {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.toolbarCamDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease infinite;
+}
+
 .toolbarSub {
     font-size: 11px;
     color: var(--muted);
@@ -175,6 +192,13 @@
     font-weight: 600;
     color: var(--text-h);
     text-transform: capitalize;
+}
+
+.reporteCam {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 2px;
 }
 
 .reporteSubtitle {
@@ -466,5 +490,17 @@
 
     .reporteMeta {
         text-align: left;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
     }
 }

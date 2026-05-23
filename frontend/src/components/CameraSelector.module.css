@@ -1,0 +1,94 @@
+.wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px 0;
+}
+
+.label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn:hover {
+    background: var(--surface2);
+    color: var(--text);
+}
+
+.active {
+    background: var(--accent-bg) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    font-weight: 600;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dotOn {
+    background: var(--green);
+    animation: pulse 2s ease infinite;
+}
+
+.dotOff {
+    background: var(--muted);
+}
+
+.nombre {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fps {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}

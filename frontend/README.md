@@ -1,16 +1,36 @@
-# React + Vite
+# RetailVision Analytics — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz web del sistema de monitoreo, construida con React 19 + Vite.
 
-Currently, two official plugins are available:
+## Comandos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install      # instalar dependencias
+npm run dev      # servidor de desarrollo → http://localhost:5173
+npm run build    # compilar para producción
+npm run preview  # previsualizar build de producción
+```
 
-## React Compiler
+## Dependencias principales
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Paquete | Uso |
+|---------|-----|
+| react + react-dom | UI |
+| recharts | Gráficos de barras y líneas |
+| jspdf + html2canvas | Exportación a PDF |
+| lucide-react | Iconos |
 
-## Expanding the ESLint configuration
+## Estructura
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+src/
+├── App.jsx              # Raíz, navegación y selector de cámara
+├── index.css            # Variables CSS globales
+├── hooks/
+│   ├── useMonitor.js    # WebSocket por cámara
+│   ├── useAnalisis.js   # Métricas e historial por cámara
+│   └── useReporte.js    # Datos combinados para reportes
+└── components/          # Componentes de UI
+```
+
+El frontend espera el backend en `http://localhost:8000`. Para cambiar la URL edita las constantes `BASE` / `BASE_WS` en los hooks.

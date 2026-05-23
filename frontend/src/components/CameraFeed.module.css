@@ -4,6 +4,20 @@
     gap: 0;
 }
 
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.camName {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+}
+
 .frame {
     position: relative;
     width: 100%;
@@ -44,6 +58,19 @@
     border-radius: 50%;
     background: var(--red);
     animation: pulse 1.5s ease infinite;
+}
+
+.camIdBadge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #000000aa;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
 @keyframes pulse {

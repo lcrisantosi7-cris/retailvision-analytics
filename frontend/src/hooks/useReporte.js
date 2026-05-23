@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 const BASE = 'http://localhost:8000'
 
-export function useReporte(activo = false) {
+export function useReporte(activo = false, camId = 'cam_01') {
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
@@ -13,9 +13,9 @@ export function useReporte(activo = false) {
         setLoading(true)
         try {
             const [rHist, rMet, rSnap] = await Promise.all([
-                fetch(`${BASE}/api/historial`),
-                fetch(`${BASE}/api/metricas`),
-                fetch(`${BASE}/api/snapshot`),
+                fetch(`${BASE}/api/historial/${camId}`),
+                fetch(`${BASE}/api/metricas/${camId}`),
+                fetch(`${BASE}/api/snapshot/${camId}`),
             ])
             const hist = await rHist.json()
             const met = await rMet.json()
@@ -29,7 +29,7 @@ export function useReporte(activo = false) {
         } finally {
             setLoading(false)
         }
-    }, [activo])
+    }, [activo, camId])
 
     useEffect(() => {
         fetchData()

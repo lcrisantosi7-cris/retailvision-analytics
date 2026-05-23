@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import './index.css'
 
-import { useMonitor } from './hooks/useMonitor'
+import { useMonitor, useCameraList } from './hooks/useMonitor'
 
 import Header from './components/Header'
 import StatCard from './components/StatCard'
 import CameraFeed from './components/CameraFeed'
+import CameraSelector from './components/CameraSelector'
 import ZoneChart from './components/ZoneChart'
 import Heatmap from './components/Heatmap'
 import ClientList from './components/ClientList'
@@ -16,7 +17,16 @@ import styles from './App.module.css'
 
 export default function App() {
   const [vista, setVista] = useState('monitor')
-  const { data, connected, error } = useMonitor()
+  const [camId, setCamId] = useState('cam_01')
+
+  // Lista de cámaras disponibles (se refresca cada 5 s)
+  const { cameras } = useCameraList()
+
+  // Estado en tiempo real de la cámara seleccionada
+  const { data, connected, error } = useMonitor(camId)
+
+  // Nombre de la cámara activa
+  const camNombre = cameras.find(c => c.id === camId)?.nombre ?? camId
 
   // Zona con más clientes
   const zonaPico = Object.entries(data.conteo_zonas || {})
@@ -42,6 +52,13 @@ export default function App() {
           ⚠ {error} — asegúrate de que el backend esté corriendo en puerto 8000
         </div>
       )}
+
+      {/* ── Selector de cámara (visible en todas las vistas) ── */}
+      <CameraSelector
+        cameras={cameras}
+        selected={camId}
+        onSelect={setCamId}
+      />
 
       {/* ── Vista Monitor ── */}
       {vista === 'monitor' && (
@@ -71,7 +88,12 @@ export default function App() {
           </section>
 
           <section className={styles.main}>
-            <CameraFeed total={data.total_clientes} connected={connected} />
+            <CameraFeed
+              camId={camId}
+              nombre={camNombre}
+              total={data.total_clientes}
+              connected={connected}
+            />
             <div className={styles.sidebar}>
               <ZoneChart conteo_zonas={data.conteo_zonas} />
               <Heatmap heatmap_b64={data.heatmap_b64} />
@@ -86,12 +108,12 @@ export default function App() {
 
       {/* ── Vista Análisis ── */}
       {vista === 'analisis' && (
-        <AnalisisView activo={vista === 'analisis'} />
+        <AnalisisView activo={vista === 'analisis'} camId={camId} camNombre={camNombre} />
       )}
 
       {/* ── Vista Reportes ── */}
       {vista === 'reporte' && (
-        <ReporteView activo={vista === 'reporte'} />
+        <ReporteView activo={vista === 'reporte'} camId={camId} camNombre={camNombre} />
       )}
     </div>
   )
