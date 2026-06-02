@@ -17,7 +17,9 @@ El sistema soporta **múltiples cámaras simultáneas** (webcam local, cámaras 
 ## Vistas del sistema
 
 ### 🖥️ Vista Monitor
+
 La pantalla principal. Muestra:
+
 - **Selector de cámara** — cambia entre cámaras activas en tiempo real.
 - **Feed de cámara en vivo** con bounding boxes sobre cada persona detectada, identificadas por ID y zona.
 - **4 KPIs en tiempo real**: clientes en cámara, zona más activa, confianza promedio de detección y FPS de procesamiento.
@@ -26,14 +28,18 @@ La pantalla principal. Muestra:
 - **Tabla de clientes activos**: lista de cada persona detectada con su ID, zona actual, confianza y tiempo de permanencia.
 
 ### 📊 Vista Análisis
+
 Métricas técnicas del modelo y estadísticas de comportamiento **por cámara seleccionada**:
+
 - **Precisión, Recall y F1-Score** del modelo YOLOv8, calculados en tiempo real con anillos circulares animados.
 - **Conteo de TP / FP / FN** (verdaderos positivos, falsos positivos, falsos negativos).
 - **Gráfico de línea** con el promedio de clientes por hora a lo largo del día.
 - **Gráfico de barras horizontales** con el tiempo promedio de permanencia por zona.
 
 ### 📄 Vista Reportes
+
 Reporte ejecutivo descargable en PDF **por cámara seleccionada**:
+
 - **Resumen ejecutivo** con los KPIs más importantes de la sesión.
 - **Tabla de análisis por zona** con clientes, porcentaje del total, permanencia promedio y nivel de prioridad.
 - **Historial de flujo por hora** en formato de barras.
@@ -72,12 +78,12 @@ Reporte ejecutivo descargable en PDF **por cámara seleccionada**:
 
 ## Requisitos previos
 
-| Requisito | Versión mínima |
-|-----------|---------------|
-| Python | 3.10 |
-| Node.js (incluye npm) | 18 |
-| Git | cualquiera |
-| Cámara | webcam USB/integrada o cámara IP con RTSP |
+| Requisito             | Versión mínima                            |
+| --------------------- | ----------------------------------------- |
+| Python                | 3.10                                      |
+| Node.js (incluye npm) | 18                                        |
+| Git                   | cualquiera                                |
+| Cámara                | webcam USB/integrada o cámara IP con RTSP |
 
 > **GPU opcional:** si tu equipo tiene una GPU NVIDIA con CUDA, el sistema la detecta y la usa automáticamente para acelerar la inferencia. Sin GPU, corre perfectamente en CPU (más lento).
 
@@ -107,6 +113,7 @@ source venv/bin/activate
 ```
 
 > **Windows — error de permisos:** si PowerShell bloquea la activación, ejecuta esto como administrador una sola vez:
+>
 > ```powershell
 > Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 > ```
@@ -120,6 +127,7 @@ pip install -r requirements.txt
 > La primera vez que arranque el backend, YOLOv8 descargará automáticamente `yolov8n.pt` (~6 MB). Necesitas internet en ese momento.
 
 **Con GPU NVIDIA (opcional, mucho más rápido):**
+
 ```bash
 # Instalar PyTorch con CUDA 12.x ANTES de instalar requirements.txt
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
@@ -127,6 +135,7 @@ pip install -r requirements.txt
 ```
 
 **Linux sin entorno gráfico (servidor / WSL):**
+
 ```bash
 sudo apt-get install libgl1-mesa-glx libglib2.0-0
 pip install -r requirements.txt
@@ -145,6 +154,7 @@ cd ..
 Abre `main.py` y edita el diccionario `CAMERAS`:
 
 **Webcam local:**
+
 ```python
 "cam_01": {
     "source": 0,          # 0 = primera cámara, 1 = segunda, etc.
@@ -154,6 +164,7 @@ Abre `main.py` y edita el diccionario `CAMERAS`:
 ```
 
 **Cámara IP (RTSP) — ej. EZVIZ:**
+
 ```python
 "cam_02": {
     "source": f"rtsp://admin:{os.getenv('CAM_02_PASS', '')}@192.168.0.106:554/H264?ch=1&subtype=0",
@@ -163,6 +174,7 @@ Abre `main.py` y edita el diccionario `CAMERAS`:
 ```
 
 Para cámaras IP, crea un archivo `.env` en la raíz del proyecto con las contraseñas:
+
 ```
 CAM_02_PASS=XXXXXX
 CAM_03_PASS=XXXXXX
@@ -183,6 +195,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Salida esperada:
+
 ```
 [CAP cam_01] Conectando a: 0
 [CAP cam_01] Conectado correctamente.
@@ -217,16 +230,16 @@ El indicador **"En vivo"** en el header confirma que el frontend está conectado
 
 ## Endpoints del backend
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/` | Estado de la API y lista de cámaras |
-| `GET` | `/api/cameras` | Lista de cámaras con estado, FPS y clientes |
-| `GET` | `/video/{cam_id}` | Stream MJPEG de la cámara |
-| `WS` | `/ws/monitor/{cam_id}` | WebSocket con datos JSON en tiempo real |
-| `GET` | `/api/snapshot/{cam_id}` | Estado actual sin imágenes |
-| `GET` | `/api/historial/{cam_id}` | Promedio de clientes por hora |
-| `GET` | `/api/metricas/{cam_id}` | Precisión, Recall, F1 y tiempos por zona |
-| `GET` | `/api/zonas/{cam_id}` | Lista de zonas configuradas |
+| Método | Ruta                      | Descripción                                 |
+| ------ | ------------------------- | ------------------------------------------- |
+| `GET`  | `/`                       | Estado de la API y lista de cámaras         |
+| `GET`  | `/api/cameras`            | Lista de cámaras con estado, FPS y clientes |
+| `GET`  | `/video/{cam_id}`         | Stream MJPEG de la cámara                   |
+| `WS`   | `/ws/monitor/{cam_id}`    | WebSocket con datos JSON en tiempo real     |
+| `GET`  | `/api/snapshot/{cam_id}`  | Estado actual sin imágenes                  |
+| `GET`  | `/api/historial/{cam_id}` | Promedio de clientes por hora               |
+| `GET`  | `/api/metricas/{cam_id}`  | Precisión, Recall, F1 y tiempos por zona    |
+| `GET`  | `/api/zonas/{cam_id}`     | Lista de zonas configuradas                 |
 
 > Los endpoints sin `/{cam_id}` (ej. `/video`, `/api/metricas`) siguen funcionando y apuntan a la primera cámara configurada — compatibilidad con versiones anteriores.
 
@@ -344,6 +357,7 @@ pip install -r requirements.txt
 ## Tecnologías utilizadas
 
 **Backend**
+
 - [FastAPI](https://fastapi.tiangolo.com/) — API REST y WebSocket
 - [Ultralytics YOLOv8](https://docs.ultralytics.com/) — detección y tracking de personas
 - [OpenCV](https://opencv.org/) — captura de cámara, procesamiento de imagen y heatmap
@@ -351,10 +365,37 @@ pip install -r requirements.txt
 - [python-dotenv](https://pypi.org/project/python-dotenv/) — gestión de variables de entorno
 
 **Frontend**
+
 - [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
 - [Recharts](https://recharts.org/) — gráficos de barras y líneas
 - [jsPDF](https://github.com/parallax/jsPDF) + [html2canvas](https://html2canvas.hertzen.com/) — exportación a PDF
 - CSS Modules + tipografía [Poppins](https://fonts.google.com/specimen/Poppins)
+
+---
+
+## Capturas de pantalla
+
+### 🖥️ Dashboard — Vista Monitor
+
+Panel principal con feed de cámara en vivo, KPIs en tiempo real, gráfico de distribución por zonas y mapa de calor acumulado de la sesión.
+
+> ![Monitor-Dashboard](Screenshots/Dashboard.webp)
+
+### 📊 Analytics — Vista Análisis
+
+Métricas de rendimiento del modelo YOLOv8 (Precisión, Recall y F1-Score) con anillos animados, conteo de TP/FP/FN, historial de flujo por hora y permanencia promedio por zona.
+
+> ![Analisis-Medidas](Screenshots/Analisis.webp.webp)
+
+### 📄 Reportes — Vista Reportes
+
+**Tabla de análisis por zona** con clientes, porcentaje de participación, permanencia promedio y nivel de prioridad.
+
+> ![Reporte-Tabla](Screenshots/reporte.webp)
+
+**Recomendaciones automáticas** generadas por el sistema a partir del comportamiento detectado durante la sesión.
+
+> ![Reporte-Recomendaciones](Screenshots/reporte_recomendaciones.webp)
 
 ---
 
@@ -367,4 +408,4 @@ pip install -r requirements.txt
 
 ---
 
-*RetailVision Analytics · Universidad César Vallejo · Lima 2026*
+_RetailVision Analytics · Universidad César Vallejo · Lima 2026_

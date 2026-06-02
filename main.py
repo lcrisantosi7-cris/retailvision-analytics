@@ -66,7 +66,7 @@ CAMERAS: Dict[str, dict] = {
 
     # ── Cámara 02 — EZVIZ CS-H6c (IP) ────────────────────────────────────────
     # Requisito previo: habilitar RTSP en la app EZVIZ
-    #   App → Cámara → ⚙ Ajustes → Configuración del servidor local → activar RTSP
+    #   App → Cámara → Ajustes → Configuración del servidor local → activar RTSP
     #   Desactivar "Cifrado de vídeo" si aparece esa opción.
     #
     # Credenciales:

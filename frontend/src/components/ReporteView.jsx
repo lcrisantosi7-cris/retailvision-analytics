@@ -126,7 +126,7 @@ export default function ReporteView({ activo, camId = 'cam_01', camNombre = '' }
                     <div className={styles.reporteMeta}>
                         <p className={styles.reporteFecha}>{fechaReporte}</p>
                         <p className={styles.reporteCam}>{camNombre || camId}</p>
-                        <p className={styles.reporteSubtitle}>Reporte de toma de decisiones comerciales · Piura 2026</p>
+                        <p className={styles.reporteSubtitle}>Reporte de toma de decisiones comerciales · Lima 2026</p>
                     </div>
                 </div>
 

@@ -13,7 +13,7 @@ export default function Header({ connected, fps, timestamp, vista, onVista }) {
                     <span className={styles.logoName}>
                         Retail<span>Monitor</span>
                     </span>
-                    <span className={styles.sub}>Sistema de análisis · Piura 2026</span>
+                    <span className={styles.sub}>Sistema de análisis · Lima 2026</span>
                 </div>
             </div>
 
