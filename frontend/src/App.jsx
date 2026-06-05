@@ -12,6 +12,7 @@ import Heatmap from './components/Heatmap'
 import ClientList from './components/ClientList'
 import AnalisisView from './components/AnalisisView'
 import ReporteView from './components/ReporteView'
+import VideoUploadView from './components/VideoUploadView'
 
 import styles from './App.module.css'
 
@@ -53,12 +54,14 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Selector de cámara (visible en todas las vistas) ── */}
-      <CameraSelector
-        cameras={cameras}
-        selected={camId}
-        onSelect={setCamId}
-      />
+      {/* ── Selector de cámara (visible en monitor, análisis y reportes) ── */}
+      {vista !== 'video' && (
+        <CameraSelector
+          cameras={cameras}
+          selected={camId}
+          onSelect={setCamId}
+        />
+      )}
 
       {/* ── Vista Monitor ── */}
       {vista === 'monitor' && (
@@ -115,6 +118,9 @@ export default function App() {
       {vista === 'reporte' && (
         <ReporteView activo={vista === 'reporte'} camId={camId} camNombre={camNombre} />
       )}
+
+      {/* ── Vista Video ── */}
+      {vista === 'video' && <VideoUploadView />}
     </div>
   )
 }

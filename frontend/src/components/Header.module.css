@@ -165,3 +165,19 @@
     font-weight: 600;
     box-shadow: var(--shadow-sm);
 }
+
+.navVideo {
+    border: 1px solid transparent;
+    color: var(--accent) !important;
+}
+
+.navVideo:hover {
+    border-color: var(--accent) !important;
+    background: var(--accent-bg) !important;
+}
+
+.navVideo.navActive {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+}

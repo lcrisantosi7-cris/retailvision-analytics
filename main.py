@@ -22,8 +22,10 @@ import asyncio
 import base64
 import os
 import time
+import uuid
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 from threading import Thread, Lock
 from typing import Dict, List
 
@@ -32,7 +34,7 @@ load_dotenv()   # carga variables desde .env si existe
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
@@ -52,15 +54,21 @@ app.add_middleware(
 CAMERAS: Dict[str, dict] = {
 
     # ── Cámara 01 — webcam local ──────────────────────────────────────────────
+    # Zonas calibradas para cámara en esquina superior (vista diagonal).
+    # La cámara cubre el local completo en diagonal:
+    #   - Parte izquierda del frame = zona de ropa/exhibición
+    #   - Centro = zona de atención / mostrador
+    #   - Parte derecha = probadores / fondo
+    #   - Franja inferior = tránsito / entrada
     "cam_01": {
         "source": 0,
         "nombre": "Entrada principal",
         "zonas": {
-            "Entrada":             (0.00, 0.00, 0.20, 1.00),
-            "Zona A - Ropa":       (0.20, 0.00, 0.45, 0.50),
-            "Zona B - Calzado":    (0.20, 0.50, 0.45, 1.00),
-            "Zona C - Accesorios": (0.45, 0.00, 0.75, 1.00),
-            "Caja":                (0.75, 0.00, 1.00, 1.00),
+            "Entrada":             (0.00, 0.75, 0.40, 1.00),   # franja inferior izquierda
+            "Zona Ropa":           (0.00, 0.00, 0.38, 0.75),   # lado izquierdo (exhibición)
+            "Zona Mostrador":      (0.38, 0.20, 0.70, 0.80),   # centro (atención)
+            "Zona Probadores":     (0.70, 0.00, 1.00, 0.70),   # lado derecho (fondo/probadores)
+            "Caja":                (0.40, 0.75, 1.00, 1.00),   # franja inferior derecha
         },
     },
 
@@ -517,3 +525,271 @@ def get_snapshot_legacy():
 @app.get("/api/metricas")
 def get_metricas_legacy():
     return get_metricas(next(iter(CAMERAS)))
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MODO VIDEO — procesamiento de archivos subidos por el usuario
+# ══════════════════════════════════════════════════════════════════════════════
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+# Trabajos activos: job_id → estado del procesamiento
+_video_jobs: Dict[str, dict] = {}
+_video_frames: Dict[str, bytes] = {}
+_video_frame_locks: Dict[str, Lock] = {}
+
+# Zonas para modo video (misma distribución que cam_01)
+_ZONAS_VIDEO = {
+    "Entrada":         (0.00, 0.75, 0.40, 1.00),
+    "Zona Ropa":       (0.00, 0.00, 0.38, 0.75),
+    "Zona Mostrador":  (0.38, 0.20, 0.70, 0.80),
+    "Zona Probadores": (0.70, 0.00, 1.00, 0.70),
+    "Caja":            (0.40, 0.75, 1.00, 1.00),
+}
+
+
+def _procesar_video(job_id: str, video_path: Path):
+    """Hilo que procesa el video subido frame a frame con YOLOv8."""
+    from ultralytics import YOLO
+    import torch
+
+    job = _video_jobs[job_id]
+    job["estado"] = "procesando"
+
+    colores_zona = _colores_para_zonas(_ZONAS_VIDEO)
+    model  = YOLO("yolov8n.pt")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+    print(f"[VIDEO {job_id}] Procesando '{video_path.name}' en {device}")
+
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        job["estado"] = "error"
+        job["error"]  = "No se pudo abrir el archivo de video"
+        return
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps_video    = cap.get(cv2.CAP_PROP_FPS) or 25
+    job["total_frames"] = total_frames
+
+    frame_count      = 0
+    t_prev           = time.time()
+    track_tiempos:   dict = defaultdict(float)
+    historial_job:   dict = defaultdict(list)
+    metricas_job     = {"tp": 0, "fp": 0, "fn": 0, "frames": 0}
+    tiempos_zona_job: dict = defaultdict(list)
+    max_clientes     = 0
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame_count += 1
+        h, w = frame.shape[:2]
+
+        scale      = 640 / w if w > 640 else 1.0
+        frame_yolo = cv2.resize(frame, (int(w * scale), int(h * scale))) if scale < 1.0 else frame
+
+        results = model.track(frame_yolo, classes=[0], persist=True, verbose=False, imgsz=640)
+
+        clientes     = []
+        conteo_zonas = {z: 0 for z in _ZONAS_VIDEO}
+        metricas_job["frames"] += 1
+
+        if results[0].boxes is not None and results[0].boxes.id is not None:
+            for box in results[0].boxes:
+                x1y, y1y, x2y, y2y = box.xyxy[0].tolist()
+                x1 = int(x1y / scale); y1 = int(y1y / scale)
+                x2 = int(x2y / scale); y2 = int(y2y / scale)
+
+                cx_norm  = ((x1 + x2) / 2) / w
+                cy_norm  = ((y1 + y2) / 2) / h
+                track_id = int(box.id[0])
+                conf     = float(box.conf[0])
+
+                zona = _zona_de_punto(cx_norm, cy_norm, _ZONAS_VIDEO)
+                if zona in conteo_zonas:
+                    conteo_zonas[zona] += 1
+
+                track_tiempos[track_id] += 1 / fps_video
+
+                if conf >= 0.5:
+                    metricas_job["tp"] += 1
+                else:
+                    metricas_job["fp"] += 1
+
+                clientes.append({
+                    "id":             track_id,
+                    "zona":           zona,
+                    "confianza":      round(conf, 2),
+                    "tiempo_en_zona": round(track_tiempos[track_id]),
+                })
+                if zona in _ZONAS_VIDEO:
+                    tiempos_zona_job[zona].append(track_tiempos[track_id])
+
+                color = colores_zona.get(zona, (200, 200, 200))
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(frame, f"#{track_id} {conf:.0%}",
+                            (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+        else:
+            if len(clientes) > 0:
+                metricas_job["fn"] += 1
+
+        # Dibujar zonas
+        for nombre, (zx1, zy1, zx2, zy2) in _ZONAS_VIDEO.items():
+            p1    = (int(zx1 * w), int(zy1 * h))
+            p2    = (int(zx2 * w), int(zy2 * h))
+            color = colores_zona[nombre]
+            cv2.rectangle(frame, p1, p2, color, 1)
+            cv2.putText(frame, nombre, (p1[0] + 4, p1[1] + 18),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+
+        # Overlay de progreso
+        t_now  = time.time()
+        fps_r  = 1.0 / max(t_now - t_prev, 1e-6)
+        t_prev = t_now
+        pct    = int(frame_count / total_frames * 100) if total_frames > 0 else 0
+        cv2.putText(frame, f"FPS:{fps_r:.1f}  Frame:{frame_count}/{total_frames}  Personas:{len(clientes)}  [{pct}%]",
+                    (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+        # Guardar frame JPEG para el stream
+        frame_web = cv2.resize(frame, (854, 480))
+        _, buf = cv2.imencode(".jpg", frame_web, [cv2.IMWRITE_JPEG_QUALITY, 75])
+        with _video_frame_locks[job_id]:
+            _video_frames[job_id] = buf.tobytes()
+
+        # Historial por minuto del video
+        seg     = frame_count / fps_video
+        minuto  = f"{int(seg // 60):02d}:{int(seg % 60):02d}"
+        historial_job[minuto].append(len(clientes))
+        max_clientes = max(max_clientes, len(clientes))
+
+        # Actualizar progreso en el estado
+        job.update({
+            "progreso":       pct,
+            "frame_actual":   frame_count,
+            "clientes_ahora": len(clientes),
+            "conteo_zonas":   conteo_zonas,
+        })
+
+    cap.release()
+
+    # Métricas finales
+    tp, fp, fn = metricas_job["tp"], metricas_job["fp"], metricas_job["fn"]
+    precision  = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall     = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1         = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+
+    prom_zona = {
+        zona: round(sum(t) / len(t), 1) if (t := tiempos_zona_job.get(zona, [])) else 0.0
+        for zona in _ZONAS_VIDEO
+    }
+    historial_final = [
+        {"tiempo": k, "promedio": round(sum(v) / len(v), 1)}
+        for k, v in sorted(historial_job.items())
+    ]
+
+    job.update({
+        "estado":       "completado",
+        "progreso":     100,
+        "metricas": {
+            "precision":            round(precision * 100, 1),
+            "recall":               round(recall    * 100, 1),
+            "f1":                   round(f1        * 100, 1),
+            "tp": tp, "fp": fp, "fn": fn,
+            "frames_procesados":    metricas_job["frames"],
+            "tiempo_promedio_zona": prom_zona,
+        },
+        "historial":    historial_final,
+        "max_clientes": max_clientes,
+    })
+    print(f"[VIDEO {job_id}] Completado. Frames: {frame_count}, Personas máx: {max_clientes}")
+
+    # Limpiar archivo temporal
+    try:
+        video_path.unlink()
+    except Exception:
+        pass
+
+
+def _mjpeg_video_generator(job_id: str):
+    last_frame = b""
+    while True:
+        job = _video_jobs.get(job_id)
+        if not job:
+            break
+        with _video_frame_locks.get(job_id, Lock()):
+            frame = _video_frames.get(job_id, b"")
+
+        if frame and frame != last_frame:
+            last_frame = frame
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n"
+                + frame +
+                b"\r\n"
+            )
+            time.sleep(1 / 25)
+        else:
+            if job.get("estado") == "completado":
+                break
+            time.sleep(1 / 60)
+
+
+@app.post("/api/upload-video")
+async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+    """Sube un archivo de video y lo procesa con YOLOv8 en segundo plano."""
+    ext = Path(file.filename).suffix.lower()
+    if ext not in {".mp4", ".avi", ".mov", ".mkv", ".webm"}:
+        raise HTTPException(400, "Formato no soportado. Usa MP4, AVI, MOV, MKV o WEBM.")
+
+    job_id    = str(uuid.uuid4())[:8]
+    save_path = UPLOAD_DIR / f"{job_id}{ext}"
+
+    content = await file.read()
+    with open(save_path, "wb") as f:
+        f.write(content)
+
+    _video_jobs[job_id]        = {
+        "estado":          "en_cola",
+        "progreso":        0,
+        "frame_actual":    0,
+        "total_frames":    0,
+        "clientes_ahora":  0,
+        "conteo_zonas":    {},
+        "metricas":        None,
+        "historial":       [],
+        "max_clientes":    0,
+        "nombre_archivo":  file.filename,
+    }
+    _video_frames[job_id]      = b""
+    _video_frame_locks[job_id] = Lock()
+
+    Thread(target=_procesar_video, args=(job_id, save_path), daemon=True, name=f"video-{job_id}").start()
+
+    return {"job_id": job_id, "mensaje": "Procesamiento iniciado"}
+
+
+@app.get("/api/video-status/{job_id}")
+def get_video_status(job_id: str):
+    if job_id not in _video_jobs:
+        raise HTTPException(404, "Trabajo no encontrado")
+    return _video_jobs[job_id]
+
+
+@app.get("/video/upload/{job_id}")
+def video_upload_feed(job_id: str):
+    if job_id not in _video_jobs:
+        raise HTTPException(404, "Trabajo no encontrado")
+    return StreamingResponse(
+        _mjpeg_video_generator(job_id),
+        media_type="multipart/x-mixed-replace; boundary=frame",
+    )
+
+
+@app.delete("/api/upload-video/{job_id}")
+def delete_video_job(job_id: str):
+    _video_jobs.pop(job_id, None)
+    _video_frames.pop(job_id, None)
+    _video_frame_locks.pop(job_id, None)
+    return {"ok": True}

@@ -1,0 +1,438 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 24px 40px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ── Cabecera ── */
+.pageHead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.pageTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-h);
+}
+
+.pageSub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+/* ── Dropzone ── */
+.dropzone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 64px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+}
+
+.dropzone:hover,
+.dropzoneOver {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+}
+
+.fileInput {
+    display: none;
+}
+
+.dropIcon {
+    font-size: 42px;
+    opacity: 0.6;
+}
+
+.dropTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-h);
+}
+
+.dropSub {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.dropError {
+    font-size: 12px;
+    color: var(--red);
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* ── Secciones genéricas ── */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sectionTitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-h);
+    letter-spacing: 0.01em;
+}
+
+/* ── Cabecera del video ── */
+.videoHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.videoNombre {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-h);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 70%;
+}
+
+.estadoBadge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+    white-space: nowrap;
+}
+
+.estadoProcesando {
+    background: #f59e0b14;
+    color: var(--yellow);
+    border: 1px solid #f59e0b30;
+}
+
+.estadoOk {
+    background: #22c55e14;
+    color: var(--green);
+    border: 1px solid #22c55e30;
+}
+
+/* ── Frame de video ── */
+.videoFrame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0a0a0a;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.videoImg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.videoPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* ── Barra de progreso ── */
+.progressWrap {
+    background: var(--border);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progressBar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.3s ease;
+}
+
+.progressLabel {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* ── KPI grid (fila de tarjetas) ── */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.kpiCard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.kpiVal {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.kpiLabel {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Zona grid (dos columnas) ── */
+.zonaGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* ── Cards genéricas ── */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cardTitle {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-h);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Filas de zona con barra ── */
+.zonaList {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.zonaRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zonaDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.zonaNombre {
+    font-size: 12px;
+    color: var(--text);
+    min-width: 110px;
+}
+
+.zonaBarWrap {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.zonaBar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    opacity: 0.8;
+    min-width: 0;
+}
+
+.zonaVal {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-h);
+    min-width: 32px;
+    text-align: right;
+}
+
+.sinDatos {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+}
+
+/* ── Detalle TP/FP/FN ── */
+.detalleMet {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px 32px;
+}
+
+.detalleItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.detalleVal {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.detalleLabel {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: center;
+}
+
+.detalleSep {
+    width: 1px;
+    height: 44px;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+/* ── Historial de barras ── */
+.histGrid {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 140px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.histItem {
+    flex: 0 0 auto;
+    min-width: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+}
+
+.histBarWrap {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.histBar {
+    width: 28px;
+    background: var(--accent);
+    border-radius: 4px 4px 0 0;
+    opacity: 0.8;
+    min-height: 4px;
+    transition: height 0.3s ease;
+}
+
+.histVal {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-h);
+}
+
+.histLabel {
+    font-size: 9px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+/* ── Botones ── */
+.reiniciarBtn {
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.reiniciarBtn:hover {
+    background: var(--bg);
+}
+
+/* ── Error ── */
+.errorWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px 0;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.errorIcon {
+    font-size: 32px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .layout {
+        padding: 16px 16px 32px;
+    }
+
+    .kpiGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .zonaGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .detalleMet {
+        padding: 16px;
+    }
+}

@@ -1,26 +1,11 @@
-# ══════════════════════════════════════════════════════════════════════════════
-# RetailVision Analytics — Dependencias Python
-# ══════════════════════════════════════════════════════════════════════════════
-# Instalación estándar (CPU):
-#   pip install -r requirements.txt
-#
-# Con GPU NVIDIA (CUDA 12.x) — mucho más rápido:
-#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-#   pip install -r requirements.txt
-#
-# Linux sin entorno gráfico (servidor / WSL) — instalar antes:
-#   sudo apt-get install libgl1-mesa-glx libglib2.0-0
-# ══════════════════════════════════════════════════════════════════════════════
 
-# API y servidor
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 websockets==13.0
 python-multipart==0.0.9
 
-# Visión artificial y modelo
 opencv-python==4.10.0.84
 ultralytics==8.3.0
 
-# Variables de entorno (.env)
+
 python-dotenv==1.0.1
