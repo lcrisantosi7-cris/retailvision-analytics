@@ -36,12 +36,16 @@ export default function VideoUploadView() {
         try {
             const res = await fetch(`${BASE}/api/video-status/${id}`)
             const data = await res.json()
+            if (!res.ok) throw new Error(data.detail ?? 'No se pudo leer el estado del análisis')
             setJob(data)
             if (data.estado === 'completado' || data.estado === 'error') {
                 clearInterval(pollRef.current)
                 setFase(data.estado)
+                if (data.estado === 'error') setErrorMsg(data.error || data.mensaje || 'El backend no pudo procesar el video')
             }
-        } catch { /* reintentar en el próximo tick */ }
+        } catch (e) {
+            setErrorMsg(e.message || 'No se pudo consultar el backend')
+        }
     }, [])
 
     useEffect(() => () => clearInterval(pollRef.current), [])
@@ -66,6 +70,7 @@ export default function VideoUploadView() {
             if (!res.ok) throw new Error(data.detail ?? 'Error al subir')
             setJobId(data.job_id)
             pollRef.current = setInterval(() => pollStatus(data.job_id), 800)
+            pollStatus(data.job_id)
         } catch (e) {
             setFase('error')
             setErrorMsg(e.message)
@@ -85,6 +90,7 @@ export default function VideoUploadView() {
     const historial = job?.historial ?? []
     const conteo = job?.conteo_zonas ?? {}
     const completado = fase === 'completado'
+    const tieneFrame = (job?.frame_actual ?? 0) > 0
 
     return (
         <div className={styles.layout}>
@@ -133,7 +139,7 @@ export default function VideoUploadView() {
                         </div>
 
                         <div className={styles.videoFrame}>
-                            {!imgErr ? (
+                            {!imgErr && tieneFrame ? (
                                 <img
                                     key={jobId}
                                     src={`${BASE}/video/upload/${jobId}`}
@@ -143,8 +149,9 @@ export default function VideoUploadView() {
                                 />
                             ) : (
                                 <div className={styles.videoPlaceholder}>
-                                    <span>📹</span>
-                                    <span>Iniciando stream…</span>
+                                    <span className={styles.placeholderIcon}>{fase === 'error' ? '⚠' : '▶'}</span>
+                                    <strong>{fase === 'error' ? 'No se pudo generar el video' : 'Preparando vista previa'}</strong>
+                                    <span>{job?.mensaje || 'El backend está iniciando el análisis…'}</span>
                                 </div>
                             )}
                         </div>
@@ -152,8 +159,8 @@ export default function VideoUploadView() {
                         {!completado && (
                             <div className={styles.progressWrap}>
                                 <div className={styles.progressBar} style={{ width: `${pct}%` }} />
-                                <span className={styles.progressLabel}>
-                                    Frame {job?.frame_actual ?? 0} / {job?.total_frames ?? '—'} · {pct}%
+                                    <span className={styles.progressLabel}>
+                                        {job?.mensaje || 'Procesando…'} · Frame {job?.frame_actual ?? 0} / {job?.total_frames ?? '—'} · {pct}%
                                 </span>
                             </div>
                         )}
@@ -322,7 +329,11 @@ export default function VideoUploadView() {
             {fase === 'error' && (
                 <div className={styles.errorWrap}>
                     <span className={styles.errorIcon}>⚠️</span>
-                    <p>{errorMsg || 'Ocurrió un error al procesar el video'}</p>
+                    <div>
+                        <strong>El análisis se detuvo</strong>
+                        <p>{errorMsg || 'Ocurrió un error al procesar el video'}</p>
+                        <small>Revisa los logs de Render si el problema continúa. El tamaño de tu archivo (5.72 MB) está dentro del límite.</small>
+                    </div>
                     <button className={styles.reiniciarBtn} onClick={reiniciar}>Reintentar</button>
                 </div>
             )}

@@ -156,6 +156,13 @@
     gap: 10px;
     color: var(--muted);
     font-size: 13px;
+    text-align: center;
+    padding: 24px;
+}
+
+.placeholderIcon {
+    font-size: 28px;
+    color: var(--accent);
 }
 
 /* ── Barra de progreso ── */
@@ -412,6 +419,26 @@
     color: var(--red);
     font-size: 13px;
     font-weight: 500;
+    text-align: center;
+}
+
+.errorWrap strong {
+    display: block;
+    color: var(--text-h);
+    margin-bottom: 6px;
+}
+
+.errorWrap p {
+    margin: 0 0 6px;
+    color: var(--red);
+}
+
+.errorWrap small {
+    display: block;
+    max-width: 620px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
 }
 
 .errorIcon {

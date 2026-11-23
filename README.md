@@ -2,7 +2,7 @@
 
 Sistema de monitoreo de clientes en tiempo real usando YOLOv8 y visión artificial. Detecta y rastrea personas por zonas del local desde una o varias cámaras.
 
-**Universidad César Vallejo · Piura 2026**
+**RetailMonitor · Plataforma de análisis inteligente**
 
 ---
 
@@ -216,7 +216,7 @@ _`venv/`, `node_modules/` y `.env` están en `.gitignore` — cada colaborador e
 
 ---
 
-_RetailVision Analytics · Universidad César Vallejo · Piura 2026_
+_RetailMonitor · Plataforma de análisis inteligente_
 
 
 ## Configuración por variables de entorno

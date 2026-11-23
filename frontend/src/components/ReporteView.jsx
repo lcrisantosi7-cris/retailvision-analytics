@@ -295,7 +295,7 @@ export default function ReporteView({ activo, camId = 'cam_01', camNombre = '' }
                 <div className={styles.divider} />
                 <div className={styles.footer}>
                     <span>RetailMonitor · Sistema inteligente de análisis de comportamiento de clientes</span>
-                    <span>Universidad César Vallejo · Piura 2026</span>
+                    <span>RetailMonitor · Reporte de análisis</span>
                 </div>
 
             </div>

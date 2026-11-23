@@ -574,29 +574,31 @@ _ZONAS_VIDEO = {
 }
 
 
-def _procesar_video(job_id: str, video_path: Path):
+def _procesar_video_core(job_id: str, video_path: Path):
     """Hilo que procesa el video subido frame a frame con YOLOv8."""
     from ultralytics import YOLO
     import torch
 
     job = _video_jobs[job_id]
     job["estado"] = "procesando"
+    job["mensaje"] = "Cargando el modelo de detección…"
 
     colores_zona = _colores_para_zonas(_ZONAS_VIDEO)
     model  = YOLO("yolov8n.pt")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
+    job["mensaje"] = f"Modelo listo ({device}). Abriendo video…"
     print(f"[VIDEO {job_id}] Procesando '{video_path.name}' en {device}")
 
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
-        job["estado"] = "error"
-        job["error"]  = "No se pudo abrir el archivo de video"
-        return
+        raise RuntimeError("OpenCV no pudo abrir el video. Verifica que sea un MP4 válido con códec H.264 o MPEG-4.")
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps_video    = cap.get(cv2.CAP_PROP_FPS) or 25
     job["total_frames"] = total_frames
+    job["fps_video"] = round(fps_video, 2)
+    job["mensaje"] = f"Video listo: {total_frames:,} frames a {fps_video:.1f} FPS. Procesando…"
 
     frame_count      = 0
     t_prev           = time.time()
@@ -697,6 +699,7 @@ def _procesar_video(job_id: str, video_path: Path):
             "frame_actual":   frame_count,
             "clientes_ahora": len(clientes),
             "conteo_zonas":   conteo_zonas,
+            "mensaje":        f"Analizando frame {frame_count:,} de {total_frames:,}…",
         })
 
     cap.release()
@@ -718,6 +721,7 @@ def _procesar_video(job_id: str, video_path: Path):
 
     job.update({
         "estado":       "completado",
+        "mensaje":      "Análisis terminado correctamente.",
         "progreso":     100,
         "metricas": {
             "precision":            round(precision * 100, 1),
@@ -737,6 +741,27 @@ def _procesar_video(job_id: str, video_path: Path):
         video_path.unlink()
     except Exception:
         pass
+
+
+def _procesar_video(job_id: str, video_path: Path):
+    """Ejecuta el análisis y convierte fallos del hilo en un estado visible."""
+    try:
+        _procesar_video_core(job_id, video_path)
+    except Exception as exc:
+        job = _video_jobs.get(job_id)
+        if job is not None:
+            job.update({
+                "estado": "error",
+                "progreso": 0 if not job.get("frame_actual") else job.get("progreso", 0),
+                "mensaje": "El análisis se detuvo antes de generar un frame.",
+                "error": str(exc) or "Error inesperado procesando el video.",
+            })
+        print(f"[VIDEO {job_id}] ERROR: {exc}")
+    finally:
+        try:
+            video_path.unlink()
+        except OSError:
+            pass
 
 
 def _mjpeg_video_generator(job_id: str):
@@ -789,6 +814,7 @@ async def upload_video(file: UploadFile = File(...)):
 
     _video_jobs[job_id]        = {
         "estado":          "en_cola",
+        "mensaje":         "Video recibido. Esperando al procesador…",
         "progreso":        0,
         "frame_actual":    0,
         "total_frames":    0,
