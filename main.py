@@ -53,6 +53,7 @@ def _camera_source(value: str):
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_MB", "500")) * 1024 * 1024
 UPLOAD_CHUNK_BYTES = 1024 * 1024
+ENABLE_LIVE_CAMERAS = os.getenv("ENABLE_LIVE_CAMERAS", "true").lower() in {"1", "true", "yes", "on"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -382,6 +383,9 @@ def inference_loop(cam_id: str):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.on_event("startup")
 async def startup():
+    if not ENABLE_LIVE_CAMERAS:
+        print("[DEMO] Cámaras en vivo desactivadas; disponible el análisis de videos subidos.")
+        return
     for cam_id in CAMERAS:
         Thread(target=capture_loop,   args=(cam_id,), daemon=True, name=f"cap-{cam_id}").start()
         Thread(target=inference_loop, args=(cam_id,), daemon=True, name=f"inf-{cam_id}").start()

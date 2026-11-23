@@ -8,6 +8,7 @@ services:
     env_file:
       - .env
     environment:
+      ENABLE_LIVE_CAMERAS: ${ENABLE_LIVE_CAMERAS:-true}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       CAM_01_SOURCE: ${CAM_01_SOURCE:-0}
       CAM_02_SOURCE: ${CAM_02_SOURCE:-}

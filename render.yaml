@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: retailvision-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ENABLE_LIVE_CAMERAS
+        value: "false"
+      - key: CAM_01_SOURCE
+        value: "0"
+      - key: MAX_UPLOAD_MB
+        value: "500"
+      - key: CORS_ORIGINS
+        sync: false

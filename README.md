@@ -252,3 +252,18 @@ npm ci
 npm run lint
 npm run build
 ```
+
+
+## Demo rápida con Render + Vercel
+
+Esta modalidad analiza un video subido desde la interfaz. En Render se configura `ENABLE_LIVE_CAMERAS=false` porque Render no puede acceder a la webcam de tu computadora. El archivo local dentro de `uploads/` no se publica automáticamente: debes subirlo desde la pantalla **Video** después de desplegar.
+
+1. En Render crea un **Web Service** conectado a este repositorio. Selecciona Docker y usa `Dockerfile.backend`, o crea el servicio desde `render.yaml` con **New → Blueprint**.
+2. Configura estas variables en Render: `ENABLE_LIVE_CAMERAS=false`, `CORS_ORIGINS=https://TU-PROYECTO.vercel.app`, `MAX_UPLOAD_MB=500`.
+3. Espera el despliegue y abre `https://TU-SERVICIO.onrender.com/health`. Debe responder con `status: ok`. Copia la URL del servicio.
+4. En Vercel importa el mismo repositorio y establece **Root Directory** como `frontend`. El framework debe ser Vite, el comando de build `npm run build` y el directorio de salida `dist`.
+5. En Vercel crea `VITE_API_BASE_URL=https://TU-SERVICIO.onrender.com`, vuelve a desplegar y copia la URL del frontend.
+6. Regresa a Render y reemplaza `CORS_ORIGINS` por la URL final de Vercel. Guarda y vuelve a desplegar el backend.
+7. Entra al frontend, selecciona **Video**, pulsa para subir el archivo ubicado en tu carpeta local `uploads/`, espera el procesamiento y muestra el stream y las métricas.
+
+Si Render se duerme en el plan gratuito, la primera petición puede tardar. Abre `/health` antes de la demo y espera a que responda. Para una presentación estable conviene usar un plan que mantenga el servicio activo.
