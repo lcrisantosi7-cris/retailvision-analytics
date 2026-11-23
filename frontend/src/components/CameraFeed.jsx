@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import styles from './CameraFeed.module.css'
 
-const BASE = 'http://localhost:8000'
+import { API_BASE_URL as BASE } from '../config'
 
 export default function CameraFeed({ camId = 'cam_01', nombre = 'Cámara', total, connected }) {
     const [imgError, setImgError] = useState(false)

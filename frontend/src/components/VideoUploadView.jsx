@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import styles from './VideoUploadView.module.css'
 
-const BASE = 'http://localhost:8000'
+import { API_BASE_URL as BASE } from '../config'
 
 const ZONAS_COLOR = {
     'Entrada': '#f59e0b',

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const BASE = 'http://localhost:8000'
+import { API_BASE_URL as BASE } from '../config'
 
 export function useReporte(activo = false, camId = 'cam_01') {
     const [data, setData] = useState(null)

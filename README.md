@@ -217,3 +217,38 @@ _`venv/`, `node_modules/` y `.env` están en `.gitignore` — cada colaborador e
 ---
 
 _RetailVision Analytics · Universidad César Vallejo · Piura 2026_
+
+
+## Configuración por variables de entorno
+
+Copia `.env.example` a `.env` y ajusta los valores. `CAM_01_SOURCE` acepta `0`, `1`, etc. para webcams locales, o una URL RTSP/HTTP para cámaras de red. La segunda cámara solo se activa cuando defines `CAM_02_SOURCE`; así el servidor no intenta conectarse a una IP privada de ejemplo.
+
+`CORS_ORIGINS` admite una lista separada por comas. En producción debe contener únicamente el dominio real del frontend. `MAX_UPLOAD_MB` limita el tamaño de los videos subidos y `VITE_API_BASE_URL` indica al frontend dónde encontrar la API pública.
+
+## Docker Compose
+
+Requisitos: Docker y Docker Compose.
+
+```bash
+cp .env.example .env
+# edita .env
+docker compose up --build
+```
+
+Abre `http://localhost:5173` y comprueba la API en `http://localhost:8000/health`. El primer arranque descarga el modelo `yolov8n.pt` y lo conserva en el volumen `yolo-cache`.
+
+## Despliegue recomendado
+
+Para una instalación real con cámaras RTSP recomiendo un VPS Linux con Docker, como Hetzner Cloud, DigitalOcean o una VM de AWS. El VPS debe poder alcanzar las cámaras por red; un servicio PaaS no puede ver una webcam conectada a tu laptop ni una cámara detrás de una red privada sin VPN o túnel. En el VPS instala Docker, clona el repositorio, configura `.env`, ejecuta `docker compose up -d --build` y coloca HTTPS delante con Caddy o Nginx.
+
+Para una demo sin cámaras en vivo, puedes desplegar el backend Docker como Web Service en Render o Railway y el frontend como sitio estático en Vercel. Configura `VITE_API_BASE_URL` con la URL pública del backend y `CORS_ORIGINS` con la URL del frontend. La API usa WebSocket y streaming MJPEG, por lo que debes contratar/configurar un servicio que soporte conexiones persistentes; no conviene desplegar este backend como función serverless.
+
+## Comprobaciones
+
+```bash
+python -m py_compile main.py
+cd frontend
+npm ci
+npm run lint
+npm run build
+```

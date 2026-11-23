@@ -38,11 +38,25 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Uplo
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-app = FastAPI(title="RetailVision Analytics API")
+app = FastAPI(title="RetailVision Analytics API", version="1.0.0")
+
+
+def _env_list(name: str, default: str) -> list[str]:
+    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+
+
+def _camera_source(value: str):
+    """Acepta índices de webcam ("0") o URLs/rutas de video."""
+    value = value.strip()
+    return int(value) if value.isdigit() else value
+
+
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_MB", "500")) * 1024 * 1024
+UPLOAD_CHUNK_BYTES = 1024 * 1024
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=_env_list("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000"),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,7 +75,7 @@ CAMERAS: Dict[str, dict] = {
     #   - Parte derecha = probadores / fondo
     #   - Franja inferior = tránsito / entrada
     "cam_01": {
-        "source": 0,
+        "source": _camera_source(os.getenv("CAM_01_SOURCE", "0")),
         "nombre": "Entrada principal",
         "zonas": {
             "Entrada":             (0.00, 0.75, 0.40, 1.00),   # franja inferior izquierda
@@ -88,14 +102,19 @@ CAMERAS: Dict[str, dict] = {
     #   /H264?ch=1&subtype=1   → sub-stream (menor resolución, más fluido)
     #   /h264_stream           → path alternativo
     #   /Streaming/Channels/101 → estilo Hikvision
-    "cam_02": {
-        "source": f"rtsp://admin:{os.getenv('CAM_02_PASS', '')}@192.168.0.106:554/H264?ch=1&subtype=0",
+    # Se agrega abajo solo cuando CAM_02_SOURCE está configurada. Así el
+    # backend no intenta conectarse a una IP privada inexistente por defecto.
+}
+
+if os.getenv("CAM_02_SOURCE"):
+    CAMERAS["cam_02"] = {
+        "source": _camera_source(os.environ["CAM_02_SOURCE"]),
         "nombre": "Zona A - Ropa",
         "zonas": {
             "Zona A - Ropa":  (0.00, 0.00, 0.50, 1.00),
             "Zona A - Fondo": (0.50, 0.00, 1.00, 1.00),
         },
-    },
+    }
 
     # ── Cámara 03 — ejemplo IP genérica ──────────────────────────────────────
     # "cam_03": {
@@ -115,7 +134,6 @@ CAMERAS: Dict[str, dict] = {
     #         "Caja": (0.00, 0.00, 1.00, 1.00),
     #     },
     # },
-}
 
 # ══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES
@@ -368,6 +386,11 @@ async def startup():
         Thread(target=capture_loop,   args=(cam_id,), daemon=True, name=f"cap-{cam_id}").start()
         Thread(target=inference_loop, args=(cam_id,), daemon=True, name=f"inf-{cam_id}").start()
         print(f"[OK] Hilos iniciados para {cam_id} ({CAMERAS[cam_id]['nombre']})")
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "retailvision-api", "cameras": len(CAMERAS)}
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MJPEG STREAM
@@ -737,7 +760,7 @@ def _mjpeg_video_generator(job_id: str):
 
 
 @app.post("/api/upload-video")
-async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def upload_video(file: UploadFile = File(...)):
     """Sube un archivo de video y lo procesa con YOLOv8 en segundo plano."""
     ext = Path(file.filename).suffix.lower()
     if ext not in {".mp4", ".avi", ".mov", ".mkv", ".webm"}:
@@ -746,9 +769,19 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
     job_id    = str(uuid.uuid4())[:8]
     save_path = UPLOAD_DIR / f"{job_id}{ext}"
 
-    content = await file.read()
-    with open(save_path, "wb") as f:
-        f.write(content)
+    total_bytes = 0
+    try:
+        with open(save_path, "wb") as f:
+            while chunk := await file.read(UPLOAD_CHUNK_BYTES):
+                total_bytes += len(chunk)
+                if total_bytes > MAX_UPLOAD_BYTES:
+                    raise HTTPException(413, f"El video supera el límite de {MAX_UPLOAD_BYTES // 1024 // 1024} MB.")
+                f.write(chunk)
+    except HTTPException:
+        save_path.unlink(missing_ok=True)
+        raise
+    finally:
+        await file.close()
 
     _video_jobs[job_id]        = {
         "estado":          "en_cola",

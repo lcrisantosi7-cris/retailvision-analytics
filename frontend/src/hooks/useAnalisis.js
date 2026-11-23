@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const BASE = 'http://localhost:8000'
+import { API_BASE_URL as BASE } from '../config'
 
 const ESTADO_INICIAL = {
     historial: [],

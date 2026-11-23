@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-const BASE_WS = 'ws://localhost:8000'
-const BASE_API = 'http://localhost:8000'
+import { API_BASE_URL, WS_BASE_URL } from '../config'
 
 const ESTADO_INICIAL = {
     cam_id: '',
@@ -37,7 +36,7 @@ export function useMonitor(camId = 'cam_01') {
         }
         clearTimeout(retryRef.current)
 
-        const ws = new WebSocket(`${BASE_WS}/ws/monitor/${id}`)
+        const ws = new WebSocket(`${WS_BASE_URL}/ws/monitor/${id}`)
         wsRef.current = ws
 
         ws.onopen = () => {
@@ -91,7 +90,7 @@ export function useCameraList() {
 
     const fetchCameras = useCallback(async () => {
         try {
-            const res = await fetch(`${BASE_API}/api/cameras`)
+            const res = await fetch(`${API_BASE_URL}/api/cameras`)
             const json = await res.json()
             setCameras(json.cameras ?? [])
             setError(null)
